@@ -8,7 +8,7 @@ To execute, this code will need a POSIX-compliant environment (Linux, macOS, per
 OpenSSL
 
 # Time to compute
-On a memory-optimized current-generation AWS instance on the 64-bit x86 architecture with enough RAM, it takes 200 minutes to complete.
+On a memory-optimized current-generation AWS instance on the 64-bit x86 architecture with enough RAM and 64 virtual cores, it takes 200 minutes to complete.
 
 # Outcome
 No collisions have been identified.
