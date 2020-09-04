@@ -27,19 +27,13 @@ static void printHash(unsigned char * hash) {
 
 static int compareHash(const void * x, const void * y) {
 	uint64_t * a, * b;
-        a = ((struct hashPair *) x)->hash;
+	a = ((struct hashPair *) x)->hash;
 	b = ((struct hashPair *) y)->hash;
-	int result = 0;
 	for (int i = 0; i < 4; ++i) {
-		if(a[i] > b[i]) {
-			result = 1;
-			break;
-		} else if (a[i] < b[i]) {
-			result = -1;
-			break;
-		}
+		if(a[i] > b[i]) return 1;
+		else if(a[i] < b[i]) return -1;
 	}
-	return result;
+	return 0;
 }
 
 
