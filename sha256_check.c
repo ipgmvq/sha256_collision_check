@@ -30,8 +30,8 @@ static int compareHash(const void * x, const void * y) {
 	a = ((struct hashPair *) x)->hash;
 	b = ((struct hashPair *) y)->hash;
 	for (int i = 0; i < 4; ++i) {
-		if(a[i] > b[i]) return 1;
-		else if(a[i] < b[i]) return -1;
+		if(a[i] < b[i]) return -1;
+		else if(a[i] > b[i]) return 1;
 	}
 	return 0;
 }
