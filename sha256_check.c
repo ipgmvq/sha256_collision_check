@@ -6,8 +6,8 @@
 #include <time.h>
 
 #define THREADS 128L
-#define BATCH 2500000L // 1 0000 000 000 divided by 128
-#define TOTALNUM 320000000L
+#define BATCH 78125000L // 1 0000 000 000 divided by 128
+#define TOTALNUM 10000000000
 
 struct hashPair {
 	long long int number;
