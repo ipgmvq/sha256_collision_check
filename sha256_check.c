@@ -6,8 +6,8 @@
 #include <time.h>
 
 #define THREADS 128L
-#define BATCH 78125000L // 1 0000 000 000 divided by 128
-#define TOTALNUM 10000000000
+#define BATCH 2500000L // 1 0000 000 000 divided by 128
+#define TOTALNUM 320000000L
 
 struct hashPair {
 	long long int number;
@@ -30,8 +30,8 @@ static int compareHash(const void * x, const void * y) {
 	a = ((struct hashPair *) x)->hash;
 	b = ((struct hashPair *) y)->hash;
 	for (int i = 0; i < 4; ++i) {
-		if(a[i] < b[i]) return -1;
-		else if(a[i] > b[i]) return 1;
+		if(a[i] > b[i]) return 1;
+		else if(a[i] < b[i]) return -1;
 	}
 	return 0;
 }
@@ -52,15 +52,17 @@ static void * fillHash(void * threadId) {
 
 
 static void * checkEquals(void * threadId) {
-        for (long long int i = BATCH * (long long int) threadId + 1; i < BATCH * (1 + (long long int) threadId); ++i) {
-                if(!compareHash((void *) &hashes[i], (void *) &hashes[i - 1])) {
-                        printf("number %lld and %lld give the same hash:\n", hashes[i].number, hashes[i-1].number);
-                        printHash(hashes[i].hash);
-                        printHash(hashes[i-1].hash);
-                        putchar('\n');
-                        fflush(stdout);
-                }
-        }
+	for (long long int i = BATCH * (long long int) threadId + 1; i < BATCH * (1 + (long long int) threadId); ++i) {
+		if(!compareHash((void *) &hashes[i], (void *) &hashes[i - 1])) {
+			flockfile(stdout);
+			printf("number %lld and %lld give the same hash:\n", hashes[i].number, hashes[i-1].number);
+			printHash(hashes[i].hash);
+			printHash(hashes[i-1].hash);
+			putchar('\n');
+			fflush(stdout);
+			funlockfile(stdout);
+		}
+	}
 	return (void *) (intptr_t) 0;
 }
 
@@ -74,16 +76,18 @@ int main() {
 	for (int i = 0; i < THREADS; ++i)
 		pthread_join(myThreads[i], NULL);
 	time_t t1 = time(0);
-        int diff = t1 - t0;
-        printf("\nI started sorting at: %02d:%02d\n\n", diff / 60, diff % 60);
+	int diff = t1 - t0;
+	printf("\nI started sorting at: %02d:%02d\n\n", diff / 60, diff % 60);
+	fflush(stdout);
 	qsort(hashes, TOTALNUM, sizeof(struct hashPair), compareHash);
 	t1 = time(0);
-        diff = t1 - t0;
-        printf("\nI finished sorting at: %02d:%02d\n\n", diff / 60, diff % 60);
+	diff = t1 - t0;
+	printf("\nI finished sorting at: %02d:%02d\n\n", diff / 60, diff % 60);
+	fflush(stdout);
 	for (int i = 0; i < THREADS; ++i)
-                pthread_create(&myThreads[i], NULL, checkEquals, (void *) (intptr_t) i);
-        for (int i = 0; i < THREADS; ++i)
-                pthread_join(myThreads[i], NULL);
+		pthread_create(&myThreads[i], NULL, checkEquals, (void *) (intptr_t) i);
+	for (int i = 0; i < THREADS; ++i)
+		pthread_join(myThreads[i], NULL);
 	for (long long int i = 1; i < THREADS; ++i) {
 		if(!compareHash((void *) &hashes[i * BATCH], (void *) &hashes[i * BATCH - 1])) {
 			printf("number %lld and %lld give the same hash:\n", hashes[i].number, hashes[i-1].number);
@@ -96,16 +100,16 @@ int main() {
 	free(myThreads);
 	t1 = time(0);
 	diff = t1 - t0;
-        printf("\nIt took: %02d:%02d\n\n", diff / 60, diff % 60);
+	printf("\nIt took: %02d:%02d\n\n", diff / 60, diff % 60);
 	// If somebody needs to print or save certain hashes
-	/* for (long long int i = 0; i < TOTALNUM; ++i) {
-		unsigned char * number;
-	        number = malloc(11);
-                snprintf(number, 11, "%010lld", hashes[i].number);
+	/* unsigned char * number;
+	number = malloc(11);
+	for (long long int i = 0; i < TOTALNUM; ++i) {
+		snprintf(number, 11, "%010lld", hashes[i].number);
 		fprintf(stdout, "Number %s:\n", number);
-		free(number);
 		printHash(hashes[i].hash);
 		putc('\n', stdout);
-	} */
+	}
+	free(number); */
 	return 0;
 }
